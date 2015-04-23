@@ -9,16 +9,24 @@
 import Cocoa
 import CoreBluetooth
 
-class ViewController: NSViewController, CBPeripheralManagerDelegate {
+class ViewController: NSViewController, CBPeripheralManagerDelegate, CBCentralManagerDelegate, CBPeripheralDelegate {
 
-    // Core Bluetooth Stuff
+    // Core Bluetooth Peripheral Stuff
     var myPeripheralManager: CBPeripheralManager?
     var dataToBeAdvertisedGolbal:[String:AnyObject!]?
-    
     // ID of Peripheral
-    let identifer = ""
+    var identifer = "My ID"
     // A newly generated UUID for Peripheral
-    let uuid = NSUUID()
+    var uuid = NSUUID()
+    
+    
+    //  CoreBluetooth Central Stuff
+    var myCentralManager = CBCentralManager()
+    var peripheralArray = [CBPeripheral]() // create now empty array.
+    var fullPeripheralArray = [("UUIDString","RSSI", "Name", "Services1")]
+    var myPeripheralDictionary:[String:(String, String, String, String)] = ["UUIDString":("UUIDString","RSSI", "Name","Services1")]
+    var cleanAndSortedArray = [("UUIDString","RSSI", "Name","Services1")]
+    
     
     
     //UI Stuff
@@ -153,7 +161,6 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
     
     
 }
-    
     func advertiseNewName(passedString: String ){
         
         // Stop Advertising
@@ -177,8 +184,6 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
         // Start Advertising The Packet
         myPeripheralManager?.startAdvertising(dataToBeAdvertised)
     }
-
-    
     func peripheralManagerDidStartAdvertising(peripheral: CBPeripheralManager!, error: NSError!) {
         //
         println(" State in DidStartAdvertising: " + "\(myPeripheralManager?.state.rawValue)"  )
@@ -195,5 +200,96 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate {
         
     }
 
+    
+    
+    //MARK  CBCenteral 
+    // Put CentralManager in the main queue
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        myCentralManager = CBCentralManager(delegate: self, queue: dispatch_get_main_queue())
+    }
+    
+    
+    func centralManagerDidUpdateState(central: CBCentralManager!) {
+        
+        println("centralManagerDidUpdateState")
+        
+        /*
+        typedef enum {
+        CBCentralManagerStateUnknown  = 0,
+        CBCentralManagerStateResetting ,
+        CBCentralManagerStateUnsupported ,
+        CBCentralManagerStateUnauthorized ,
+        CBCentralManagerStatePoweredOff ,
+        CBCentralManagerStatePoweredOn ,
+        } CBCentralManagerState;
+        */
+        switch central.state{
+        case .PoweredOn:
+            updateStatusText("Central poweredOn")
+            
+            
+        case .PoweredOff:
+            updateStatusText("Central State PoweredOFF")
+            
+        case .Resetting:
+            updateStatusText("Central State Resetting")
+            
+        case .Unauthorized:
+            updateStatusText("Central State Unauthorized")
+            
+        case .Unknown:
+            updateStatusText("Central State Unknown")
+            
+        case .Unsupported:
+            updateStatusText("Central State Unsupported")
+            
+        default:
+            updateStatusText("Central State None Of The Above")
+            
+        }
+    }
+    
+    func centralManager(central: CBCentralManager!, didDiscoverPeripheral peripheral: CBPeripheral!, advertisementData: [NSObject : AnyObject]!, RSSI: NSNumber!) {
+        
+        // Refresh Entry or Make an New Entry into Dictionary
+        let myUUIDString = peripheral.identifier.UUIDString
+        let myRSSIString = String(RSSI.intValue)
+        var myNameString = peripheral.name
+        var myAdvertisedServices = peripheral.services
+        
+        //  var myServices1 = peripheral.services
+        //  var serviceString = " service string "
+        
+        var myArray = advertisementData
+        var advertString = "\(advertisementData)"
+        
+        updateStatusText("\r")
+        updateStatusText("UUID: " + myUUIDString)
+        updateStatusText("RSSI: " + myRSSIString)
+        updateStatusText("Name:  \(myNameString)")
+        updateStatusText("advertString: " + advertString)
+        
+        
+        
+        let myTuple = (myUUIDString, myRSSIString, "\(myNameString)", advertString )
+        myPeripheralDictionary[myTuple.0] = myTuple
+        
+        // Clean Array
+        fullPeripheralArray.removeAll(keepCapacity: false)
+        
+        // Tranfer Dictionary to Array
+        for eachItem in myPeripheralDictionary{
+            fullPeripheralArray.append(eachItem.1)
+        }
+        
+        // Sort Array by RSSI
+        //from http://www.andrewcbancroft.com/2014/08/16/sort-yourself-out-sorting-an-array-in-swift/
+        cleanAndSortedArray = sorted(fullPeripheralArray,{
+            (str1: (String,String,String,String) , str2: (String,String,String,String) ) -> Bool in
+            return str1.1.toInt() > str2.1.toInt()
+        })
+     //   tableView.reloadData()
+    }
     
 }
