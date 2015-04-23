@@ -9,7 +9,7 @@
 import Cocoa
 import CoreBluetooth
 
-class ViewController: NSViewController, CBPeripheralManagerDelegate, CBCentralManagerDelegate, CBPeripheralDelegate {
+class ViewController: NSViewController, CBPeripheralManagerDelegate, CBCentralManagerDelegate, CBPeripheralDelegate, NSTableViewDataSource {
 
     // Core Bluetooth Peripheral Stuff
     var myPeripheralManager: CBPeripheralManager?
@@ -33,6 +33,23 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate, CBCentralMa
     @IBOutlet weak var nameField: NSTextField!
     @IBOutlet weak var myTextField: NSTextField!
     @IBOutlet weak var statusText: NSTextField!
+    
+    @IBOutlet weak var tableView: NSTableView!
+    
+    @IBAction func listenButtonPressed(sender: NSButtonCell) {
+        println("sender.state" + String(sender.state) + "\r")
+        
+        if sender.state == 1{
+            updateStatusText("Scannning")
+            myCentralManager.scanForPeripheralsWithServices(nil, options: nil )   // call to scan for services
+            
+            
+        } else {
+            updateStatusText("Not Scanning")
+            myCentralManager.stopScan()
+        }
+
+    }
     
     @IBAction func sendButtonPressed(sender: NSButton) {
         println( myTextField.stringValue )
@@ -289,7 +306,53 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate, CBCentralMa
             (str1: (String,String,String,String) , str2: (String,String,String,String) ) -> Bool in
             return str1.1.toInt() > str2.1.toInt()
         })
-     //   tableView.reloadData()
+    
+        tableView.reloadData()
     }
+    
+    
+    
+    
+    
+    
+    // NSTableView
+    
+    func numberOfRowsInTableView(tableView: NSTableView) -> Int {
+        return cleanAndSortedArray.count
+    }
+    
+    
+    func tableView(tableView: NSTableView, objectValueForTableColumn tableColumn: NSTableColumn?, row: Int) -> AnyObject? {
+        
+        if tableColumn?.identifier == "first" {
+            let myString = cleanAndSortedArray[row].0
+            return myString
+        }
+        if tableColumn?.identifier == "second"{
+            let myString = "\(cleanAndSortedArray[row].1)"
+            return myString
+        }
+        
+        if tableColumn?.identifier == "third"{
+            let myString = "\(cleanAndSortedArray[row].2)"
+            return myString
+            
+        }
+        
+        if tableColumn?.identifier == "forth"{
+            let myString = "\(cleanAndSortedArray[row].3)"
+            return myString
+            
+        }
+            
+            
+        else{
+            let myString = "\(cleanAndSortedArray[row].3)"
+            return myString
+        }
+    }
+    
+    
+    
     
 }
