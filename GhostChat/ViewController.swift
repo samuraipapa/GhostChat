@@ -20,6 +20,8 @@ class ViewController: NSViewController, CBPeripheralManagerDelegate, CBCentralMa
     var uuid = NSUUID()
     
     
+    
+    
     //  CoreBluetooth Central Stuff
     var myCentralManager = CBCentralManager()
     var peripheralArray = [CBPeripheral]() // create now empty array.
