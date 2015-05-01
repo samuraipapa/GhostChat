@@ -1,10 +1,10 @@
-# GhostChat-iOS
+# GhostChat-for Mac 
 1. Tagline: "Anon Local Chat" 
-2. Works in Airplane Mode
-3. Does not use the Internet. Secure and off the Cloud.  
+2. Works in off the Internet, baby!
+3. Secure in that it's: "off the Cloud".  
 
 # Screen Shot
-![ScreenShot](https://github.com/samuraipapa/GhostChat-iOS/blob/master/screen.png) 
+![ScreenShot](https://github.com/samuraipapa/GhostChat/blob/master/screen.png) 
 
 # Code Runs On:
 + iOS 8.3+
